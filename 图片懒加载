@@ -11,4 +11,13 @@
 方案二:
      如何判断图片出现了当前视口
      Element.getBoundingClientRect() 方法返回元素的大小及其相对于视口的位置。
+     // clientHeight 代表当前视口的高度
+    img.getBoundingClientRect().top < document.documentElement.clientHeight
+    监听 window.scroll 事件也优化一下
+    加个节流器，提高性能。工作中一般使用 lodash.throttle 就可以了，万能的 lodash 啊！
+    _.throttle(func, [wait=0], [options={}])
+方案三：
+    如何判断图片出现在了当前视口
+    IntersectionObserver   一个能够监听元素是否到了当前视口的事件，一步到位！
+    
      
