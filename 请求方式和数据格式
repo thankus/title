@@ -1,1 +1,112 @@
-我在公司请求方式一般都用的get和post
+请求方式一般都用的get和post,数据格式对应的application/x-www-form-urlencoded和application/json
+post请求，application/json格式，一般我们会这么写
+   getBankList: (data) => {    
+    return api.post(`/blank/feng/`, data).then(      
+            (res) => {        
+                if (res.status === 0) {          
+                    return res.data;        
+                } else {          
+                    throw openNotification(res.status, res.msg);        
+                }      
+         },(err) => {        
+            throw err;      
+            }    
+         );  
+    }
+如果是delete请求，application/json格式，怎么写？这么写不对哦。
+  getBankList: (data) => {    
+      return api.delete(`/blank/feng/`, data).then(      
+        (res) => {        
+            if (res.status === 0) {          
+                return res.data;        
+            } else {          
+                throw openNotification(res.status, res.msg);        
+            }      
+        }, (err) => {           
+            throw err;      
+        }    
+      );  
+  }
+要这么写
+   deleteTicket: (data) => {    
+    return api.delete(`/blank/feng/`, { data: data }).then(     
+         (res) => {
+            return res;      
+        },(error) => {
+            throw error;      
+        }    
+       );  
+  },
+  
+这个数据格式一般我们会在HTTP请求中Content-Type(互联网媒体类型)里面看到，表示请求和响应中的媒体类型信息，它用来告诉服务端如何处理请求的数据，以及告诉客户端（一般是浏览器）如何解析响应的数据，比如显示图片，解析并展示html等等
+
+要注意一点，它只告诉了后端应该用什么类型来解析数据，但是后端并不知道我传了个什么东西给他。当然，传错类型直接会报错。
+
+1.1 application/x-www-form-urlencoded
+数据被编码为key/value格式发送到服务器（表单默认的提交数据的格式）。
+一般post很常用这种方式，但是我一般是在get中使用。
+getTicketInfo: (params) => {    
+    return api.get(`/blank/feng?cinemaId=${params}`).then(      
+        (res) => {        
+            return res;      
+        },(error) => {        
+            throw error;      
+        }    
+    );  
+  }
+
+ 可能我们传了参数
+ title=test&sub[]=1&sub[]=2&sub[]=3
+ 到请求的时候会发现变成了
+ title=test&sub%5B%5D=1&sub%5B%5D=2&sub%5B%5D=3
+ 这是因为当我们发送请求的时候会进行编码。
+ x-www-form-urlencoded的编码规则就是url编码规则，规则比较多，我列了几个比较常见的规则：
+ 1.字符"a"-"z"，"A"-"Z"，"0"-"9"，"."，"-"，"*"，和"_" 都不会被编码(中文会被编码);
+2.将空格转换为加号 (+) ;
+3.将非文本内容转换成"%xy"的形式,xy是两位16进制的数值;
+4.在每个 name=value 对之间放置 & 符号。
+
+在线编码解码：www.jsons.cn/urlencode/
+
+1.2 application/json
+
+application/json 这个 Content-Type 作为响应头大家肯定不陌生。实际上，现在越来越多的人把它作为请求头，用来告诉服务端消息主体是序列化后的 JSON 字符串。
+由于 JSON 规范的流行，除了低版本 IE 之外的各大浏览器都原生支持 JSON.stringify，服务端语言也都有处理 JSON 的函数，使用 JSON 不会遇上什么麻烦。
+ addOperator: (data) => {
+    return api.post(`/blcank/feng`, data).then(
+      (res) => {
+        if (res.status === 0) {
+          return res.data;
+        } else {
+          throw openNotification(res.status, res.msg);
+        }
+      },
+      (err) => {
+        throw err;
+      }
+    );
+  }
+
+data={
+  "name": "feng",
+   "old":  23,
+   "帅不帅": Yes,
+}
+
+application/json对比application/x-www-form-urlencoded来说，Json格式支持比键值对复杂得多的结构化数据，非常适合 RESTful 的接口。
+
+1.3 multipart/form-data
+
+与application/x-www-form-urlencoded和application/json不同，这是一个多部分多媒体类型。
+我们平常上传图片时经常会用到这种格式。
+
+首先生成了一个 boundary 用于分割不同的字段，在请求实体里每个参数以------boundary开始，然后是附加信息和参数名，然后是空行，最后是参数内容。多个参数将会有多个boundary块。
+可以上传键值对，也可以上传文件。当上传的字段是文件时，会有Content-Type来表名文件类型；content-disposition，用来说明字段的一些信息。
+由于有boundary隔离，所以multipart/form-data既可以上传文件，也可以上传键值对，它采用了键值对的方式，所以可以上传多个文件。
+可以把boundary理解为网格，数据装在格子中，有很多格子可以装载不同的数据。
+
+https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9a7041f5f90a4327a2a091a2b2a34108~tplv-k3u1fbpfcp-zoom-1.image
+
+1.4 text/xml
+
+2. 请求方式
